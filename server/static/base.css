@@ -1,0 +1,148 @@
+body {
+    background-color: black;
+}
+
+.hg-padding {
+    padding: 15px;
+}
+
+.hg-padding-internal {
+    padding: 20px;
+}
+
+.hg-line {
+    border: 1px solid #FFB335;
+    border-radius: 5px;
+}
+
+.nav-bar-input {
+    font-family: Arial;
+    color: #FFB335;
+    background-color: black;
+    border: 1px solid #FFB335;
+    width: 300px;
+    font-weight: bold;
+}
+
+.ad-info-block {
+    padding: 5px;
+}
+
+p, span {
+    color: #FFB335;
+}
+
+.ad-single {
+    height: 50em;
+}
+
+.ad-info-block > p {
+    font-weight: bold;
+}
+
+.ad-single > p {
+    font-weight: bold;
+}
+
+#search-pane {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 50px;
+    right: 50px;
+    top: 90px;
+    width: calc(100% - 100px);
+    overflow: auto;
+    background-color: black;
+}
+
+#search-pane > h1 {
+    color: #FFB335;
+    font-weight: bold;
+}
+
+#search-pane > #search-results {
+    color: #FFB335;
+}
+
+#search-pane > #search-pane-close {
+    color: red;
+}
+
+#search-results > #search-entry {
+    display: block;
+}
+
+#login-pane {
+    margin-top: 100px;
+    display: flex;
+    background-color: black;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+#register-pane {
+    margin-top: 100px;
+    display: flex;
+    background-color: black;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.margin-bottom-input {
+    margin-bottom: 10px;
+}
+
+#station-name {
+    color: #FFB335;
+    font-weight: bold;
+}
+
+#intro-title {
+    text-transform: uppercase;
+    color: #FFB335;
+    margin-top: 15px;
+    font-size: larger;
+    letter-spacing: 6px;
+}
+
+.form-text-input {
+    background: black;
+    color: white;
+    width: 14%;
+}
+
+.form-label {
+    color: #FFB335;
+    font-style: italic;
+    display: block;
+}
+
+.ad-option {
+    display: none;
+}
+
+.ad-option.trading {
+    display: block;
+}
+
+.ad-placement-progress-state {
+    display: none;
+}
+
+.regular-font {
+    color: #FFB335;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}

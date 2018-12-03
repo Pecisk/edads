@@ -1,0 +1,85 @@
+{
+  "categories": [
+    {
+      "name": "Chemicals",
+      "icon": "chemicals.svg",
+      "id": 1
+    },
+        {
+      "name": "Consumer Items",
+      "icon": "consumer_items.svg",
+      "id": 2
+    },
+    {
+      "name": "Legal Drugs",
+      "icon": "legal_drugs.svg",
+      "id": 3
+    },
+    {
+      "name": "Foods",
+      "icon": "foods.svg",
+      "id": 4
+    },
+    {
+      "name": "Industrial Materials",
+      "icon": "industrial_materials.svg",
+      "id": 5
+    },
+    {
+      "name": "Machinery",
+      "icon": "machinery.svg",
+      "id": 6
+    },
+    {
+      "name": "Medicines",
+      "icon": "medicines.svg",
+      "id": 7
+    },
+    {
+      "name": "Metals",
+      "icon": "metals.svg",
+      "id": 8
+    },
+    {
+      "name": "Minerals",
+      "icon": "minerals.svg",
+      "id": 9
+    },
+    {
+      "name": "Slavery",
+      "icon": "slavery.svg",
+      "id": 10
+    },
+    {
+      "name": "Technology",
+      "icon": "technology.svg",
+      "id": 11
+    },
+    {
+      "name": "Textiles",
+      "icon": "textiles.svg",
+      "id": 12
+    },
+    {
+      "name": "Waste",
+      "icon": "waste.svg",
+      "id": 13
+    },
+    {
+      "name": "Weapons",
+      "icon": "weapons.svg",
+      "id": 14
+    },
+    {
+      "name": "Unknown",
+      "icon": "salvage.svg",
+      "id": 15
+    },
+    {
+      "name": "Salvage",
+      "icon": "salvage.svg",
+      "id": 16
+    }
+  ]
+
+}

@@ -1,0 +1,1 @@
+COMMANDER_ALREADY_RESPONDED='commander_already_responded_to_ad'

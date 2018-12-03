@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EdAds</title>
+    <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/static/base.css" />
+    <script type="text/javascript">
+        var station_id = {{ commander_station_id }};
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 hg-padding">
+                <div class="hg-line hg-padding-internal">
+                    <form id="search-form" autocomplete="off">{% csrf_token %}
+                    <input type="text" id="search-location" name="search_location" value="Search for station..." class="nav-bar-input">
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6 hg-padding">
+                <div class="hg-line hg-padding-internal">
+                    <span style="color: white;"><span id="station-name" class="station-name">{{ commander_station }}</span> | Welcome back, {{ commander_name }}! <a href="/logout">Logout</a></span>
+                </div>
+            </div>
+        </div>
+        <div class="hg-line hg-padding" id="search-pane">
+            <div id="search-pane-close"><a href="#" id="search-pane-close-button">x</a></div>
+            <h1>Search results</h1>
+            <div id="search-results"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 hg-padding">
+                <div id="commander-comms">
+                    <h3>Commander comms</h3>
+                    <div id="commander-comms-controls" style="color: white;">Responses to your ads | Your responses to other ads | Incoming messages | Outgoing messages</div>
+                    <div class="hg-line hg-padding-internal" style="margin-bottom: 10px;" v-if="commander_comms_shown">
+                        <div @click="ad_click(ad)" class="ad-info-block hg-line noselect" v-for="ad in ads">
+                            <div class="row">
+                                <div class="ad-info-block-text col-lg-10">
+                                    <span v-html="write_ad(ad)"></span>
+                                </div>
+                                <div class="ad-info-block-meta col-lg-2">
+                                    Time
+                                </div>
+                            </div>
+                            <div style="margin-left: 30px; background: #FFB335;" v-for="response in ad.responses">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <span style="color: white;">
+                                            Cmdr ${ response.commander_name } responded to your advert with message:
+                                            "I can offer you this and this"
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ads-group">
+                    <h3>Ads</h3>
+                    <div class="hg-line hg-padding-internal" v-if="ads_shown">
+                        <div class="ad-info-block hg-line noselect" v-for="ad in ads">
+                            <div class="row">
+                                <div class="ad-info-block-text col-lg-10">
+                                    <span @click="ad_click(ad)" v-html="ad.text"></span>
+                                </div>
+                                <div class="ad-info-block-meta col-lg-2">
+                                    Time
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 hg-padding">
+                <div id="adaddformapp">
+                    <div class="hg-line regular-font noselect p-lg-3" v-if="!show_form" @click="showForm">
+                        Add advert
+                    </div>
+                    <div class="hg-line ad-single p-lg-3" v-if="show_form">
+                    <form id="add-ad" method="post" @submit.prevent="submit">
+                        {% csrf_token %}
+                        <div class="ad-type row mb-2 col-lg-12">
+                            <div class="row col-lg-12"><label class="mb-1 form-label">Type:</label></div>
+                            <div class="row col-lg-12">
+                                <select id="ad-ad-type" name="ad-ad-type" v-model="fields.ad_ad_type" @change="changeAdType">
+                                {%for ad_type_value, ad_type_text in ad_types %}<option value="{{ ad_type_value }}">{{ ad_type_text }}</option>{% endfor %}
+                            </select>
+                            </div>
+                        </div>
+
+                        <div class="ad-option activities row col-lg-12 mb-2">
+                            <div class="row col-lg-12">
+                                    <label class="mb-1 form-label">Activities:</label>
+                            </div>
+                            <div class="row col-lg-12">
+                                <select multiple name="ad-activities" v-model="fields.ad_activities">
+                                    {%for ad_activity in ad_activities %}<option value="{{ ad_activity.id }}">{{ ad_activity.name }}</option>{% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="ad-option requirements row col-lg-12 mb-2">
+                            <div class="row col-lg-12"><label class="mb-1 form-label">Combat rank:</label></div>
+                            <div class="row col-lg-12">
+                                <select class="col-lg-12" name="ad-combat-rank" v-model="fields.ad_combat_rank">
+                                    {%for ad_rank_value, ad_rank_text in ad_combat_rank %}<option value="{{ ad_rank_value }}">{{ ad_rank_text }}</option>{% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="ad-option requirements row col-lg-12 mb-2">
+                            <div class="row col-lg-6">
+                                <label class="mb-1 form-label">Hours required:</label>
+                            </div>
+                            <div class="row col-lg-6">
+                                <input class="form-text-input" v-model="fields.ad_requirements_hours" type="text" name="ad-requirements-hours" value="0">
+                            </div>
+                        </div>
+                        <div class="ad-option requirements row col-lg-12 mb-2">
+                            <div class="row col-lg-6">
+                                <label class="form-label">
+                                Wing member:
+                                </label>
+                            </div>
+                            <div class="row col-lg-6">
+                                <input type="checkbox" name="ad-wing-member" v-model="fields.ad_wing_member" checked>
+                            </div>
+                        </div>
+                        <div class="ad-option requirements row col-lg-12 mb-2">
+                            <div class="row col-lg-6">
+                                <label class="form-label">
+                                Crew member:
+                                </label>
+                            </div>
+                            <div class="row col-lg-6">
+                                <input type="checkbox" name="ad-crew-member" v-model="fields.ad_crew_member">
+                            </div>
+                        </div>
+                        <div class="ad-option requirements row col-lg-12 mb-2">
+                            <div class="row col-lg-6">
+                                <label class="mb-1 form-label">
+                                Is it legal:
+                                </label>
+                            </div>
+                            <div class="row col-lg-6">
+                                <input type="checkbox" name="ad-legal" checked v-model="fields.ad_legal">
+                            </div>
+                        </div>
+                        <div class="ad-option requirements row col-lg-12 mb-2">
+                            <div class="row col-lg-6">
+                                <label class="mb-1 form-label">
+                                    Pro Bono:
+                                </label>
+                            </div>
+                            <div class="row col-lg-6">
+                                <input type="checkbox" name="ad-payment-pro-bono" v-model="fields.ad_payment_pro_bono">
+                            </div>
+                        </div>
+                        <div class="ad-option trading row col-lg-12 mb-3 mt-3 p-2 hg-line">
+                            <div class="row col-lg-12">
+                                <h2 style="color: white;">Trading</h2>
+                            </div>
+                            <div class="row col-lg-12">
+                                <div class="row col-lg-12 mb-1">
+                                    <input class="form-text-input" type="text" name="ad-tradeable-from-units" value="0" v-model="fields.ad_tradeable_from_units">&nbsp;
+                                    <span class="form-label">
+                                        units of
+                                    </span>
+                                </div>
+                                <div class="row col-lg-12">
+                                    <select name="ad-tradeable-from" v-model="fields.ad_tradeable_from">
+                                        {%for tc in tradeables %}
+                                            <optgroup label="{{ tc.name }}">
+                                                {% for tradeable in tc.tradeables_in_category.all %}
+                                                <option value="{{ tradeable.id }}">{{ tradeable.name }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row col-lg-12 mt-2 mb-2">
+                                <span style="font-weight: bold; color: white;">
+                                    FOR
+                                </span>
+                            </div>
+                            <div class="row col-lg-12">
+                                <div class="row col-lg-12 mb-1">
+                                    <input class="form-text-input" type="text" name="ad-tradeable-to-units" value="0" v-model="fields.ad_tradeable_to_units">&nbsp;
+                                    <span class="form-label">
+                                        units of
+                                    </span>
+                                </div>
+                                <div class="row col-lg-12">
+                                    <select name="ad-tradeable-to" v-model="fields.ad_tradeable_to">
+                                        {%for tc in tradeables %}
+                                            <optgroup label="{{ tc.name }}">
+                                                {% for tradeable in tc.tradeables_in_category.all %}
+                                                <option value="{{ tradeable.id }}">{{ tradeable.name }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ad-option payment row col-lg-12 mb-2">
+                            <div class="row col-lg-12 mb-1">
+                                <label class="form-label">
+                                Payment:
+                                </label>
+                            </div>
+                            <div class="row col-lg-12">
+                                <select name="ad-payment-type" v-model="fields.ad_payment_type">
+                                    {%for tc in tradeables %}
+                                        <optgroup label="{{ tc.name }}">
+                                            {% for tradeable in tc.tradeables_in_category.all %}
+                                            <option value="{{ tradeable.id }}">{{ tradeable.name }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ad-option payment row col-lg-12">
+                            <div class="col-lg-6">Units:</div>
+                            <div class="col-lg-6"><input class="form-text-input" type="text" name="ad-payment-type-units" v-model="fields.ad_payment_type_units" value="0"></div>
+                        </div>
+                        <div id="ad-placement-progress-state" class="hg-line">
+                        </div>
+                        <input type="submit" value="Place Ad">
+                    </form>
+                </div>
+                </div>
+                <div id="ad-show-pane">
+                    <div class="hg-line ad-single" v-if="ad_shown">
+                        <h3>${ adTitle(ad) }</h3>
+                        <span v-html="write_ad(ad)"></span>
+                        <div id="ad_responses" v-if="ad_responses_shown">
+                            <div v-for="response in ad.responses">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <span style="color: white;">
+                                            Cmdr ${ response.commander_name } responded to your advert.
+                                            "I can offer you this and this"
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-for="ad">
+                                    <div class="row">
+                                    </div>
+                                    <span style="color: #FFB335;">Reply Favorite</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hg-line" v-if="response_form_shown">
+                            <h3>Response form</h3>
+                            <form id="response_form">
+                                <textarea v-bind="response.note">
+                                </textarea>
+                            </form>
+                        </div>
+                        <div class="hg-line regular-font noselect p-lg-3" id="response_button" v-if="response_button_shown" @click="respond_advert">
+                            Respond to advert
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+        </div>
+    </div>
+</body>
+    <script type="text/javascript" src="/static/base.js"></script>
+</html>
