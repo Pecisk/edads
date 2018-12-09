@@ -8,6 +8,7 @@ from .models import StarSystem, Station, Advertisement, User, Commander, Tradeab
 import json
 from .error_codes import *
 from django.db.models import Count
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
@@ -275,34 +276,99 @@ class CommanderAdResponse(View):
 
     def post(self, request, ad_id):
 
-        note = request.POST.get('note')
+        # Gather data from form
+        request_body = json.loads(request.body)
+        note = request_body.get('note')
+        if not note:
+            return JsonResponse(dict(error=NOT_ALL_REQUIRED_FIELDS), status=400)
+
         commander = Commander.objects.get(pk=request.session['commander_id'])
-        ad = Advertisement.objects.get(pk=int(ad_id))
 
-        if not AdResponse.objects.filter(commander=commander, ad=ad).exists():
+        if not commander:
+            return JsonResponse(dict(error=NO_COMMANDER_SET), status=400)
 
-            # TODO applied commanders - either manytomany via special model or just different model like, AdApplication
-            # TODO information that should be saved is - commander has applied for ad
-            ad_response = AdResponse.objects.create(
-                commander=commander, ad=ad
-            )
+        try:
+            ad = Advertisement.objects.get(pk=int(ad_id))
 
-            if note:
-                note = Message(
+            if ad.closed:
+                # Ad is closed, no reply is possible
+                return JsonResponse(dict(error=AD_CLOSED), status=400)
+
+            if ad.commander == commander:
+                return JsonResponse(dict(error=COMMANDER_CANT_RESPOND_TO_OWN_AD), status=400)
+
+            if not AdResponse.objects.filter(commander=commander, ad=ad).exists():
+
+                ad_response = AdResponse.objects.create(
+                    commander=commander, ad=ad
+                )
+
+                message = Message.create(
+                    note=note,
                     commander_from=commander,
                     commander_to=ad.commander,
                     station=None,
                     datetime=None,
                     ad_response=ad_response
                 )
-                note.save()
+
+                return JsonResponse(dict(status=SUCCESS))
+
+            else:
+
+                return JsonResponse(dict(error=COMMANDER_ALREADY_RESPONDED), status=400)
+
+        except ObjectDoesNotExist:
+
+            return JsonResponse(dict(error=INVALID_AD), status=400)
+
+
+class CommanderAdResponseReply(View):
+
+    def post(self, request, ad_response_id):
+
+        request_body = json.loads(request.body)
+        note = request_body.get('note')
+        if not note:
+            return JsonResponse(dict(error=NOT_ALL_REQUIRED_FIELDS), status=400)
+
+        commander = Commander.objects.get(pk=request.session['commander_id'])
+
+        if not commander:
+            return JsonResponse(dict(error=NO_COMMANDER_SET), status=400)
+
+        try:
+            ad_response = AdResponse.objects.get(pk=ad_response_id)
+
+            # validity check
+
+            if ad_response.ad.closed:
+                # Ad is closed, no reply is possible
+                return JsonResponse(dict(error=AD_CLOSED), status=400)
+
+            if commander is not ad_response.commander and commander is not ad_response.ad.commander:
+                return JsonResponse(dict(error=COMMANDER_NOT_PART_OF_RESPONSE), status=400)
+
+            if ad_response.commander == commander:
+                commander_to = ad_response.ad.commander
+            else:
+                commander_to = ad_response.commander
+
+            message = Message(
+                note=note,
+                commander_from=commander,
+                commander_to=commander_to,
+                meetup_station=None,
+                meetup_datetime=None,
+                ad_response=ad_response
+            )
+            message.save()
 
             return JsonResponse(dict())
 
-        else:
+        except ObjectDoesNotExist:
 
-            return JsonResponse(dict(error=COMMANDER_ALREADY_RESPONDED), status=400)
-
+            return JsonResponse(dict(error=INVALID_AD_RESPONSE), status=400)
 
 class CommanderComms(View):
 

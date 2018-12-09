@@ -52,13 +52,23 @@
                                     Time
                                 </div>
                             </div>
-                            <div style="margin-left: 30px; background: #FFB335;" v-for="response in ad.responses">
-                                <div class="row">
+                            <div class="ad-responses" v-for="response in ad.responses">
+                                <div class="row ad-response">
                                     <div class="col-lg-12">
                                         <span style="color: white;">
-                                            Cmdr ${ response.commander_name } responded to your advert with message:
-                                            "I can offer you this and this"
+                                            Cmdr ${ response.commander_name } responded to your advert.
                                         </span>
+                                    </div>
+                                </div>
+                                <div class="row ad-response-messages" v-for="message in response.messages">
+                                    <div class="col-lg-12">
+                                        "I can offer you this and this"
+                                        ${ message.note }
+                                    </div>
+                                </div>
+                                <div class="row ad-response-meta">
+                                    <div class="col-lg-12">
+                                         <span style="color: #FFB335;">Reply Favorite</span>
                                     </div>
                                 </div>
                             </div>
@@ -247,19 +257,30 @@
                         <h3>${ adTitle(ad) }</h3>
                         <span v-html="write_ad(ad)"></span>
                         <div id="ad_responses" v-if="ad_responses_shown">
-                            <div v-for="response in ad.responses">
-                                <div class="row">
+                            <div class="ad-responses" v-for="response in ad.responses">
+                                <div class="row ad-response">
                                     <div class="col-lg-12">
                                         <span style="color: white;">
                                             Cmdr ${ response.commander_name } responded to your advert.
-                                            "I can offer you this and this"
                                         </span>
                                     </div>
                                 </div>
-                                <div v-for="ad">
-                                    <div class="row">
+                                <div class="row ad-response-messages" v-for="message in response.messages">
+                                    <div class="col-lg-12">
+                                        "I can offer you this and this"
+                                        ${ message.note }
                                     </div>
-                                    <span style="color: #FFB335;">Reply Favorite</span>
+                                </div>
+                                <div class="row ad-response-meta">
+                                    <div class="col-lg-12">
+                                        <div class="ad-response-reply" :id="response.id" v-if="response_reply_shown[response.id]">
+                                            <textarea v-model="response_reply[response.id]"></textarea>
+                                            <button type="submit" name="Reply" @click.prevent="post_reply_to_response(response.id)">
+                                                Reply
+                                            </button>
+                                        </div>
+                                        <span style="color: #FFB335; noselect"><a @click.prevent="show_reply_to_response(response.id)">Reply</a> Favorite</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

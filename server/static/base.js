@@ -70,12 +70,15 @@ var ad_show_pane = new Vue({
         response_button_shown: true,
         ad_responses_shown: false,
         ad: {},
-        response: {}
+        response: {},
+        response_reply_shown: {},
+        response_reply: {},
     },
     methods: {
         show(ad) {
             this.ad_shown = true;
             this.ad = ad;
+            console.log(ad);
         },
         adTitle(ad) {
             if(ad['type'] == AD_TYPE_BARTER_TRADE) {
@@ -103,10 +106,25 @@ var ad_show_pane = new Vue({
         write_ad(ad) {
             return write_ad(ad);
         },
+        show_reply_to_response(response_id) {
+            console.log(response_id);
+            Vue.set(this.response_reply_shown, response_id, true);
+        },
+        post_reply_to_response(response_id) {
+            var $this = this;
+            axios.post('/api/advertisement/response/' + response_id + '/reply/', {'note': $this.response_reply[response_id]})
+                .then(function (response) {
+                    console.log(response.data);
+                })
+                .catch(function (error) {
+                console.log(error);
+            });
+            Vue.set(this.response_reply_shown, response_id, false);
+        },
     }
 });
 
-var ads_vue_list = new Vue({
+var ads_list = new Vue({
     el: '#ads-group',
     delimiters: ['${', '}'],
     data: {
@@ -181,7 +199,7 @@ var add_ad_form = new Vue({
             axios.post('/api/advertisement/add/', this.fields)
                 .then(function (response) {
                 console.log(response);
-                ads_vue_list.update();
+                ads_list.update();
                 $this.resetForm();
                 $this.show_form = false;
                 })
@@ -484,35 +502,6 @@ function load_and_show_ads(station_id) {
 });
 }
 
-function load_vue_ads(station_id) {
-    $.ajax({
-        url : "/api/advertisement/search/",
-        type : "POST",
-        data: JSON.stringify({ "search_method": 'by_station', 'search_station_id': station_id }),
-        contentType: 'application/json; charset=utf-8',
-
-        // handle a successful response
-        success : function(json) {
-            var return_data = json;
-            var ads_list = [];
-            for(var i = 0; i < json.length; i++) {
-                var obj = json[i];
-                var new_obj = JSON.parse(JSON.stringify(obj));
-                new_obj['text'] = write_ad(new_obj);
-                ads_list.push(new_obj);
-            }
-            ads_vue_list.ads = ads_list;
-            },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-                " <a href='#' class='close'>&times;</a></div>");
-            console.log(xhr.status + ": " + xhr.responseText);
-            }
-    });
-}
-
 function set_station_id(e) {
     e.preventDefault();
     $('#search-pane').hide();
@@ -575,12 +564,3 @@ $('#search-pane-close-button').click(function(e) {
     e.preventDefault();
     $('#search-pane').hide();
 });
-
-
-function add_ad_to_list(data) {
-    ad_text += '<div class="ad-info-block hg-line">'
-    + '<p>'+ write_ad(data) +
-    '</p>' +
-    '</div>';
-    $('3ads-group').prepend(ad_text);
-}

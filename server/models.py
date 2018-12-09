@@ -193,6 +193,8 @@ class Advertisement(models.Model):
                                      on_delete=models.CASCADE, blank=True, null=True)
     payment_units = models.PositiveIntegerField(default=0)
     added = models.DateTimeField(auto_now_add=True)
+    closed = models.BooleanField(default=False, verbose_name='Is advertisement closed')
+    hidden = models.BooleanField(default=False, verbose_name='Is advertisement hidden from search and listings')
 
     def to_json(self):
         json_response = dict(
@@ -299,7 +301,9 @@ class AdResponse(models.Model):
     datetime_responded = models.DateTimeField(auto_now_add=True)
 
     def to_json(self):
+        print([message.to_json() for message in self.related_communication.all()])
         return dict(
+            id=self.id,
             commander_id=self.commander.id,
             commander_name=self.commander.name,
             messages=[message.to_json() for message in self.related_communication.all()],
