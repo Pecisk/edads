@@ -55,6 +55,40 @@ var commander_comms = new Vue({
             ad_show_pane.ad_shown = true;
             ad_show_pane.ad_responses_shown = true;
         },
+        toggleClose(ad) {
+            var $this = this;
+            axios.post('/api/advertisement/' + ad['id'] + '/close/', this.response)
+            .then(function (response) {
+                if(ad['close']==true) {
+                    ad['close']=false;
+                    Vue.set(ad, 'close', false);
+                } else {
+                    ad['close']=true;
+                    Vue.set(ad, 'true', false);
+                }
+            })
+            .catch(function (error) {
+                if( error.response ){
+                    console.log(error.response.data);
+                }
+            });
+        },
+        toggleHidden(ad) {
+            var $this = this;
+            axios.post('/api/advertisement/' + ad['id'] + '/hide/', this.response)
+            .then(function (response) {
+                if(ad['hide']==true) {
+                    ad['hide']=false;
+                } else {
+                    ad['hide']=true;
+                }
+            })
+            .catch(function (error) {
+                if( error.response ){
+                    console.log(error.response.data);
+                }
+            });
+        }
     },
     beforeMount() {
     this.updateComms()
@@ -117,7 +151,7 @@ var ad_show_pane = new Vue({
                     console.log(response.data);
                 })
                 .catch(function (error) {
-                console.log(error);
+                console.log(error.response);
             });
             Vue.set(this.response_reply_shown, response_id, false);
         },

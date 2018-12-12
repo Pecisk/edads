@@ -212,6 +212,9 @@ class Advertisement(models.Model):
             wing_member=self.wing_member,
             combat_rank=self.combat_rank,
             hours_in_space=self.hours_in_game,
+            closed=self.closed,
+            hidden=self.hidden,
+            added=self.added,
             activities_involved=None
         )
 

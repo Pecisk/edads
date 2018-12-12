@@ -3,6 +3,8 @@ from django.http import HttpResponse, JsonResponse
 from django.views import View
 #from django.forms import modelformset_factory
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from .models import StarSystem, Station, Advertisement, User, Commander, Tradeable, TradeableCategory, Activity,\
     AdResponse, Message
 import json
@@ -346,7 +348,7 @@ class CommanderAdResponseReply(View):
                 # Ad is closed, no reply is possible
                 return JsonResponse(dict(error=AD_CLOSED), status=400)
 
-            if commander is not ad_response.commander and commander is not ad_response.ad.commander:
+            if commander != ad_response.commander and commander != ad_response.ad.commander:
                 return JsonResponse(dict(error=COMMANDER_NOT_PART_OF_RESPONSE), status=400)
 
             if ad_response.commander == commander:
@@ -372,8 +374,62 @@ class CommanderAdResponseReply(View):
 
 class CommanderComms(View):
 
+    @method_decorator(login_required)
     def get(self, request):
         ads = Advertisement.objects.filter(commander=Commander.objects.get(
             pk=request.session['commander_id']), ad_responses_advert__gt=0
         )
         return JsonResponse([ad.to_json_with_responses() for ad in ads], safe=False)
+
+
+class AdHide(View):
+
+    @method_decorator(login_required)
+    def post(self, request, ad_id):
+        commander = Commander.objects.get(pk=request.session['commander_id'])
+
+        if not commander:
+            return JsonResponse(dict(error=NO_COMMANDER_SET), status=400)
+
+        try:
+            ad = Advertisement.objects.get(pk=int(ad_id))
+
+            if ad.commander != commander:
+                return JsonResponse(dict(error=COMMANDER_DOES_NOT_OWN_AD), status=400)
+
+            ad.hidden = True if ad.hidden is False else False
+
+            ad.save()
+
+            return JsonResponse(dict(status=SUCCESS))
+
+        except ObjectDoesNotExist:
+
+            return JsonResponse(dict(error=INVALID_AD), status=400)
+
+
+
+class AdClose(View):
+
+    @method_decorator(login_required)
+    def post(self, request, ad_id):
+        commander = Commander.objects.get(pk=request.session['commander_id'])
+
+        if not commander:
+            return JsonResponse(dict(error=NO_COMMANDER_SET), status=400)
+
+        try:
+            ad = Advertisement.objects.get(pk=int(ad_id))
+
+            if ad.commander != commander:
+                return JsonResponse(dict(error=COMMANDER_DOES_NOT_OWN_AD), status=400)
+
+            ad.hidden = True if ad.hidden is False else False
+
+            ad.save()
+
+            return JsonResponse(dict(status=SUCCESS))
+
+        except ObjectDoesNotExist:
+
+            return JsonResponse(dict(error=INVALID_AD), status=400)

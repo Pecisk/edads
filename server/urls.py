@@ -3,7 +3,7 @@ from django.urls import path
 
 from .views import StarSystems, Stations, EDADSWebApp, StationSingle, StarSystemSingle, AdvertisementSingle, \
     LocationSearch, Login, Logout, RegisterUser, AdsSearch, AddAd, CommanderSetStation, CommanderAdResponse, \
-    CommanderComms, CommanderAdResponseReply
+    CommanderComms, CommanderAdResponseReply, AdClose, AdHide
 
 urlpatterns = [
     path('', EDADSWebApp.as_view(), name='main'),
@@ -20,6 +20,8 @@ urlpatterns = [
     path('api/advertisement/add/', AddAd.as_view(), name='add_ad'),
     path('api/commander/set_station/', CommanderSetStation.as_view(), name='set_station'),
     path('api/advertisement/<int:ad_id>/respond/', CommanderAdResponse.as_view(), name='respond_to_ad'),
+    path('api/advertisement/<int:ad_id>/close/', AdClose.as_view(), name='close_ad'),
+    path('api/advertisement/<int:ad_id>/hide/', AdHide.as_view(), name='hide_ad'),
     path('api/advertisement/response/<int:ad_response_id>/reply/',
          CommanderAdResponseReply.as_view(), name='reply_to_ad_response'),
     path('api/comms/', CommanderComms.as_view(), name='comms'),

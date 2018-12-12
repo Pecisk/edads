@@ -137,6 +137,14 @@ p, span {
     color: #FFB335;
 }
 
+.regular-font-white {
+    color: white;
+}
+
+.regular-font-blue {
+    color: blue;
+}
+
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
